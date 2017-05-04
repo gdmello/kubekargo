@@ -1,3 +1,8 @@
+# -*- mode: ruby -*-
+# # vi: set ft=ruby :
+
+require 'fileutils'
+
 $num_instances = 3
 $instance_name_prefix = "k8s"
 $etcd_instances = $num_instances
@@ -5,7 +10,21 @@ $local_release_dir = "/vagrant/temp"
 $kube_master_instances = $num_instances == 1 ? $num_instances : ($num_instances - 1)
 $kube_node_instances = $num_instances
 host_vars = {}
-$inventory='/home/gavin.dmello/new_wk_spc/kargo/inventory'
+$inventory='/home/gavin.dmello/new_wk_spc/kargo/inventory/vagrant_ansible_inventory'
+
+# if $inventory is not set, try to use example
+$inventory = File.join(File.dirname(__FILE__), "inventory") if ! $inventory
+
+# if $inventory has a hosts file use it, otherwise copy over vars etc
+# to where vagrant expects dynamic inventory to be.
+if ! File.exist?(File.join(File.dirname($inventory), "hosts"))
+  $vagrant_ansible = File.join(File.dirname(__FILE__), ".vagrant",
+                       "provisioners", "ansible")
+  FileUtils.mkdir_p($vagrant_ansible) if ! File.exist?($vagrant_ansible)
+  if ! File.exist?(File.join($vagrant_ansible,"inventory"))
+    FileUtils.ln_s($inventory, $vagrant_ansible)
+  end
+end
 
 
 Vagrant.configure(2) do |config|
@@ -17,7 +36,7 @@ Vagrant.configure(2) do |config|
 			node.vm.hostname = $hostname
 			node.vm.box_url = "ubuntu/xenial64"
 
-			ip = "192.168.77.#{i+100}"
+			ip = "172.17.8.#{i+100}"
 			host_vars["#{hostname}"] = {
 		        "ip": ip,
 		        "flannel_interface": ip,
@@ -38,6 +57,7 @@ Vagrant.configure(2) do |config|
 		        config.vm.provision "ansible" do |ansible|
 		          ansible.playbook = "../kargo/cluster.yml"
 		          if File.exist?(File.join(File.dirname($inventory), "hosts"))
+		          	puts $inventory
 		            ansible.inventory_path = $inventory
 		          end
 		          ansible.sudo = true
