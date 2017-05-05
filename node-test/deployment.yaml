@@ -1,17 +1,16 @@
-piVersion: apps/v1beta1
+apiVersion: apps/v1beta1
 kind: Deployment
 metadata:
-    name: node-test
+  name: node-test
 spec:
-    replicas: 1
-    template:
-        metadata:
-	    labels:
-		app: node-test-label
-	    spec:
-		containers:
-		- name: node-test
-		  image: gavind/node-test:1
-		  ports:
-		  - containerPort: 8080
-			
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: node-test-label
+    spec:
+      containers:
+      - name: node-test
+        image: gavind/node-test:1
+        ports:
+        - containerPort: 8080
