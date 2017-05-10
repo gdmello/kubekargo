@@ -1,0 +1,10 @@
+replicaCount: 1
+image:
+  repository: gavind/node-test
+  tag: 2
+  pullPolicy: IfNotPresent
+service:
+  name: node-test-v2
+  type: LoadBalancer
+  externalPort: 80
+  internalPort: 8080
